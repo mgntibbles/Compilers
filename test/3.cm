@@ -1,0 +1,14 @@
+/*
+  Created by: Megan Tibbles
+  File Name: 3.cm 
+  Purpose: Will create an error because of the missing size for the array a.
+  Similar error on line 13 when no index is used when trying to assign a value to a.
+  AST will still print but will skip that line.
+*/
+  
+  
+void main(int a) {
+    int a[];
+    a[0]=0;
+    a[]=2;
+}

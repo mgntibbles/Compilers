@@ -1,0 +1,17 @@
+/*
+  Created by: Megan Tibbles
+  File Name: 5.cm 
+  Purpose: Will create an error because of the invalid if statement and will create an error because of the missing while body. AST will still print.
+*/
+  
+void main(int a) {
+    int a;
+    int b;
+    if (){
+      return b;
+    }
+    a = 3+4-3;
+    while(a<0){
+        
+    }
+}

@@ -1,0 +1,9 @@
+/*
+  Created by: Megan Tibbles
+  File Name: 6.cm 
+  Purpose: Will create an error because of the missing function body. AST will still print.
+*/
+  
+void main(int a) {
+
+}

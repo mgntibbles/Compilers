@@ -1,0 +1,30 @@
+Author: Megan Tibbles
+Date: March 4, 2024
+
+To compile: 
+make
+
+To run scanner:
+java -cp {path to java_cup.jar}:. Scanner < {path to filename}
+ex. java -cp java-cup.jar:. Scanner < test/1.cm
+
+To run Parser and print AST:
+java -cp {path to java_cup.jar}:. Main {path to filename}
+ex. java -cp java-cup.jar:. Main test/1.cm
+
+To clean:
+make clean
+
+Test files are found in the test folder. They have a comment at the top of each that describes the expected output (error or no error).
+However, I will repeat the expected output here:
+1.cm: successfully output a AST, no errors.
+2.cm: will produce error for invalid/missing parameters but will still print AST.
+3.cm: will produce error for invalid/missing array size but will still print AST.
+4.cm: will produce error for invalid/missing while loop condition but will still print AST.
+5.cm: will produce error for invalid/missing while loop body but will still print AST.
+6.cm will produce error for missing function body but will still print AST. 
+
+Notes:
+The C1-Package provided was used as starting code for this assignment.
+Right now the makefile uses cm.cup.ordered, this is the most updated version of cm.cup.
+It contains the error recovery and reduced grammar. cm.cup.layered has the fully implemented grammar with no reductions.

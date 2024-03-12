@@ -1,0 +1,93 @@
+/*
+  Created by: Megan Tibbles
+  File Name: cm.cup
+*/
+   
+   
+/* ----------------------Preliminary Declarations Section--------------------*/
+   
+import absyn.*;
+ 
+   
+   
+/* ------------Declaration of Terminals and Non Terminals Section----------- */
+   
+terminal IF, ELSE, BOOL, INT, VOID, WHILE, RETURN;
+terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, SEMI, LTE, GTE, NEQ, NOT, OR, AND, COMMA, LBRACK, RBRACK, LCBRACK, RCBRACK;
+terminal String ID, NUM, TRUTH;
+terminal ERROR;
+
+non terminal program, dec_list, dec, var_dec, fun_dec, fun_pro, type_spec, params, param, param_list, compound_stmt, local_decs, stmt_list, stmt, expr_stmt, select_stmt, iter_stmt, return_stmt, expr, obool_expr, abool_expr, ubool_expr, simple_expr, add_expr, addop, term, relop, mulop, signed_fac, factor, var, call, args, arg_list;
+
+/* ----------------------------Grammar Section-------------------- */
+start with program;
+
+
+program         ::= dec_list ;
+
+dec_list        ::= dec_list dec | dec ;
+
+dec             ::= var_dec | fun_dec | fun_pro ;
+
+var_dec         ::= type_spec ID SEMI | type_spec ID LBRACK NUM RBRACK SEMI ;
+
+type_spec       ::= BOOL | INT | VOID ;
+
+fun_dec         ::= type_spec ID LPAREN params RPAREN compound_stmt ;
+
+fun_pro         ::= type_spec ID LPAREN params RPAREN SEMI ;
+
+params          ::= param_list COMMA param | param ;
+
+param           ::= type_spec ID | type_spec ID LBRACK RBRACK ;
+
+compound_stmt   ::= LCBRACK local_decs stmt_list RCBRACK ;
+
+local_decs      ::= local_decs var_dec /*|*/ ;
+
+stmt_list       ::= stmt_list stmt /*|*/ ;
+
+stmt            ::= expr_stmt | compound_stmt | 
+                    select_stmt | iter_stmt | return_stmt ;
+
+expr_stmt       ::= expr SEMI | SEMI ;
+
+select_stmt     ::= IF LPAREN expr RPAREN stmt | IF LPAREN expr RPAREN stmt ELSE stmt ;
+
+iter_stmt       ::= WHILE LPAREN expr RPAREN stmt ;
+
+return_stmt     ::= RETURN expr SEMI | RETURN SEMI ;
+
+expr            ::= expr SEMI | SEMI ;
+
+var             ::= ID | ID LBRACK expr RBRACK ;
+
+obool_expr      ::= obool_expr OR abool_expr | abool_expr ;
+
+abool_expr      ::= abool_expr AND ubool_expr | ubool_expr ;
+
+ubool_expr      ::= NOT ubool_expr | simple_expr ;
+
+simple_expr     ::= add_expr relop add_expr | add_expr ;
+
+relop           ::= LTE | LT | GT | GTE | EQ | NEQ ;
+
+add_expr        ::= add_expr addop term | term ;
+
+addop           ::= PLUS | MINUS ;
+
+term            ::= term mulop signed_fac | signed_fac ;
+
+mulop           ::= TIMES | OVER ;
+
+signed_fac      ::= MINUS signed_fac | factor ;
+
+factor          ::= LPAREN expr RPAREN | var | call | NUM | TRUTH ;
+
+call            ::= ID LPAREN args RPAREN ;
+
+args            ::= arg_list /*| */;
+
+arg_list        ::= arg_list COMMA expr | expr  ;   
+
+

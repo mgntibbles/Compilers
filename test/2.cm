@@ -1,0 +1,13 @@
+/*
+  Created by: Megan Tibbles
+  File Name: 2.cm 
+  Purpose: Will create an error because of the missing parameter list and invalid parameters of function call. 
+  AST will still print.
+*/
+  
+void main() {
+    int a;
+    a=0;
+    if (a=0) return 2;
+    input(int);
+}

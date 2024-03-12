@@ -1,0 +1,13 @@
+/*
+  Created by: Megan Tibbles
+  File Name: 4.cm 
+  Purpose: Will create an error because of the missing test condition in the while loop. AST will still print.
+*/
+  
+void main(int a) {
+    int a[10];
+    a=0;
+    while(){
+        a=a+1;
+    }
+}
