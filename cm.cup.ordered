@@ -184,6 +184,8 @@ param            ::= type_spec:ts ID:i
 
 compound_stmt    ::= LCBRACK local_decs:ld stmt_list:sl RCBRACK 
                      {: RESULT = new CompoundExp(ldleft, ldright, ld, sl);:}
+                  |  LCBRACK local_decs:ld RCBRACK 
+                     {: RESULT = new CompoundExp(ldleft, ldright, ld, null);:}
                   ;
 
 local_decs       ::= local_decs:ld var_dec:vd

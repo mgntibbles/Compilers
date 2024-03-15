@@ -49,4 +49,7 @@ public interface AbsynVisitor {
 
   public void visit( ArrayDec exp, int level );
 
+  public void visit( NodeType exp, int level);
+
+
 }

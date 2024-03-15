@@ -233,4 +233,8 @@ public class ShowTreeVisitor implements AbsynVisitor {
        exp.right.accept( this, level );
   }
 
+  public void visit( NodeType exp, int level ) {
+
+  }
+
 }
