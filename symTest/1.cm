@@ -1,8 +1,5 @@
-void func(int x){
+int func(int x){
     int v;
-    int f;
-    while(x<8){
-        void goo;
-        void goo;
-    }
+    bool f;
+    f = 8;
 }

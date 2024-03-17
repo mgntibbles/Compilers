@@ -8,6 +8,7 @@ public class BoolExp extends Exp {
   public Boolean value;
 
   public BoolExp( int row, int col, Boolean value ) {
+    System.out.println(value);
     this.row = row;
     this.col = col;
     this.value = value;

@@ -73,7 +73,7 @@ terminal IF, ELSE, BOOL, INT, VOID, WHILE, RETURN, LPAREN, RPAREN, SEMI, COMMA, 
 terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LTE, GTE, NEQ, NOT, OR, AND;
 terminal String ID;
 terminal String NUM;
-terminal Boolean TRUTH;
+terminal String TRUTH;
 terminal ERROR;
 
 
@@ -263,7 +263,7 @@ return_stmt      ::= RETURN:r expr:e SEMI
                   ;
 
 expr             ::= var:v ASSIGN expr:e 
-                        {:  RESULT = new AssignExp(vleft, vright, v, e);:}
+                        {: System.out.println("in assign");  RESULT = new AssignExp(vleft, vright, v, e);:}
                   | expr:a1 LTE expr:a2
                      {: RESULT = new OpExp(a1left, a1right, a1, OpExp.LTE, a2);:}
                   | expr:a1 LT expr:a2
@@ -301,7 +301,7 @@ expr             ::= var:v ASSIGN expr:e
                   | NUM:n
                      {:RESULT = new IntExp(nleft, nright, Integer.parseInt(n));:} 
                   | TRUTH:t 
-                     {:RESULT = new BoolExp(tleft, tright, t);:} 
+                     {:  RESULT = new BoolExp(tleft, tright, Boolean.parseBoolean(t)); :}       
                   ;  
 
 var              ::= ID:i

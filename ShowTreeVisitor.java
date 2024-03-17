@@ -68,6 +68,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
   }
 
   public void visit( BoolExp exp, int level ) {
+    System.out.println("here");
     indent( level );
     System.out.println( "BoolExp: " + exp.value ); 
   }

@@ -1211,7 +1211,7 @@ class CUP$parser$actions {
 		int eleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int eright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Exp e = (Exp)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		  RESULT = new AssignExp(vleft, vright, v, e);
+		 System.out.println("in assign");  RESULT = new AssignExp(vleft, vright, v, e);
               CUP$parser$result = parser.getSymbolFactory().newSymbol("expr",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -1480,8 +1480,8 @@ class CUP$parser$actions {
               Exp RESULT =null;
 		int tleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int tright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		Boolean t = (Boolean)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		RESULT = new BoolExp(tleft, tright, t);
+		String t = (String)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		  RESULT = new BoolExp(tleft, tright, Boolean.parseBoolean(t)); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("expr",13, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;

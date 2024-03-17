@@ -32,10 +32,46 @@ public class SemanticAnalyzer implements AbsynVisitor {
     return false;
   }
 
+  public int lookupAll(String key, int level){
+    for(String i: table.keySet()){
+      if(lookup(key, Integer.parseInt(i))){
+        return Integer.parseInt(i);
+      }
+    }
+    return -1;
+  }
+
+  public NodeType findNodeType(String name, ArrayList<NodeType> list){
+    for (NodeType n : list){
+      if (n.name.equals(name)){
+        return n;
+      }
+    }
+    return null;
+  }
+
   public void delete(String currLevel){
     if (table.containsKey(currLevel)){
         table.remove(currLevel);
     }
+  }
+
+  public void deleteSpecific(String currLevel, String name){
+    if (table.containsKey(currLevel)){
+      ArrayList<NodeType> list = table.get(currLevel);
+      NodeType temp = new NodeType(null, 0, "temp");
+      for (NodeType n : list){
+        if (n.name.equals(name)){
+          temp = n;
+        }
+      }
+      if (!temp.name.equals("temp")){
+        list.remove(temp);
+        table.remove(currLevel);
+        table.put(currLevel, list);
+      }
+    }
+
   }
 
   public Boolean isInteger(Dec def, String decType){
@@ -215,9 +251,37 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
   
   public void visit( AssignExp exp, int level ) {
-    level++;
-    exp.lhs.accept( this, level );
-    exp.rhs.accept( this, level );
+    int index = lookupAll(exp.lhs.name, level);
+    String lhsDecType;
+    String lhsType;
+    if (index != -1){
+      ArrayList<NodeType> list = table.get(Integer.toString(index));
+      NodeType n = findNodeType(exp.lhs.name, list);
+      lhsType = getDecType(n.def);
+      if (isBoolean(n.def, lhsType)){
+        lhsType = "class absyn.BoolExp";
+      } else if (isVoid(n.def, lhsType)){
+        lhsType = "void";
+      } else {
+        lhsType = "class absyn.IntExp";
+      }
+      String rhsType = exp.rhs.getClass().toString();
+      if(rhsType.equals(lhsType)){
+        System.out.println("here");
+        exp.dtype = n.def;
+      } else {
+        System.out.println("Type mismatch for variable "+n.name +" changing to "+rhsType);
+        if (rhsType.equals("class absyn.IntExp")){
+          SimpleDec temp = new SimpleDec(0,0, new NameTy(0,0,NameTy.INT), null);
+          deleteSpecific(Integer.toString(index), n.name);
+          insert(Integer.toString(index), temp, n.level, n.name);
+        }
+      }
+      exp.lhs.accept( this, level );
+      exp.rhs.accept( this, level );
+    } else {
+      System.out.println("Error, variable undefined.");
+    } 
   }
 
   public void visit( IfExp exp, int level ) {
@@ -246,9 +310,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( IntExp exp, int level ) {
+    exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.INT), null);
   }
 
   public void visit( BoolExp exp, int level ) {
+    exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.BOOL), null);
 }
 
   public void visit( VarExp exp, int level ) {
@@ -290,6 +356,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( SimpleVar exp, int level ){
+
 }
 
   public void visit( NilExp exp, int level ){
