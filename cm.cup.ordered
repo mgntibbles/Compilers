@@ -12,13 +12,19 @@ import absyn.*;
 /* Parser code to change the way the parser reports errors (include
    line and column number of the error). */
 parser code {:
+    public static Boolean valid = true;
+
+    public Boolean return_check(){
+      return valid;
+    }
     
     /* Change the method report_error so it will display the line and
        column of where the error occurred in the input as well as the
        reason for the error which is passed into the method in the
        String 'message'. */
     public void report_error(String message, Object info) {
-   
+         /* set the boolean variable valid to false */
+         valid = false;
         /* Create a StringBuffer called 'm' with the string 'Error' in it. */
         StringBuffer m = new StringBuffer("Error");
    
@@ -141,6 +147,8 @@ var_dec          ::= type_spec:ts ID:i SEMI
                      {: RESULT = new SimpleDec(tsleft, tsright, ts, i); :} 
                   | type_spec:ts ID:i LBRACK NUM:n RBRACK SEMI 
                      {: RESULT = new ArrayDec(tsleft, tsright,ts, i, Integer.parseInt(n)); :}
+                  | type_spec:ts ID:i LBRACK  RBRACK SEMI 
+                     {: RESULT = new ArrayDec(tsleft, tsright,ts, i, -1); :}
                   | type_spec:ts ID:i LBRACK error:er RBRACK SEMI 
                     {: parser.report_error("Invalid array declaration, row "+(erleft+1)+" col "+(erright+1), er);
                      RESULT = new ArrayDec(tsleft, tsright,ts, i, -1);:}
@@ -179,7 +187,7 @@ fun_pro          ::= type_spec:ts ID:i LPAREN param_list:p RPAREN SEMI
 param            ::= type_spec:ts ID:i
                      {: RESULT = new SimpleDec(tsleft, tsright, ts, i); :} 
                   | type_spec:ts ID:i LBRACK RBRACK 
-                     {: RESULT = new SimpleDec(tsleft, tsright, ts, i); :} 
+                     {: RESULT = new ArrayDec(tsleft, tsright, ts, i, -1); :} 
                   ;
 
 compound_stmt    ::= LCBRACK local_decs:ld stmt_list:sl RCBRACK 
@@ -263,7 +271,7 @@ return_stmt      ::= RETURN:r expr:e SEMI
                   ;
 
 expr             ::= var:v ASSIGN expr:e 
-                        {: System.out.println("in assign");  RESULT = new AssignExp(vleft, vright, v, e);:}
+                     {:  RESULT = new AssignExp(vleft, vright, v, e);:}
                   | expr:a1 LTE expr:a2
                      {: RESULT = new OpExp(a1left, a1right, a1, OpExp.LTE, a2);:}
                   | expr:a1 LT expr:a2

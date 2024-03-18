@@ -6,6 +6,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     public Integer level = 0;
     public ArrayList<Integer> scopeTracker = new ArrayList<Integer>();
     public HashMap<String, ArrayList<NodeType>> table = new HashMap<String, ArrayList<NodeType>>();
+    
 
   public void insert(String key, Dec def, int level, String name){
     NodeType nt = new NodeType(def, level, name);
@@ -18,6 +19,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
         list.add(nt);
         table.put(key, list);
     }
+  }
+
+  public void setup(){
+    insert(Integer.toString(0), new FunctionDec(0,0, new NameTy(0,0,NameTy.INT), "input", null, null), 0, "input");
+    insert(Integer.toString(0), new FunctionDec(0,0, new NameTy(0,0,NameTy.VOID), "output", null, null), 0, "output");
   }
 
   public Boolean lookup(String key, int level){
@@ -34,8 +40,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public int lookupAll(String key, int level){
     for(String i: table.keySet()){
-      if(lookup(key, Integer.parseInt(i))){
-        return Integer.parseInt(i);
+      if(Integer.parseInt(i)<=level){
+        if(lookup(key, Integer.parseInt(i))){
+          return Integer.parseInt(i);
+        }
       }
     }
     return -1;
@@ -74,6 +82,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   }
 
+  public int findType(Dec def, String decType){
+    if (isBoolean(def, decType)){
+      return NameTy.BOOL;
+    } else if (isInteger(def, decType)){
+      return NameTy.INT;
+    } else {
+      return NameTy.VOID;
+    }
+  } 
+
   public Boolean isInteger(Dec def, String decType){
     if (decType == "simple"){
       SimpleDec temp = (SimpleDec) def;
@@ -90,7 +108,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       if (temp.typ.typ == NameTy.INT){
         return true;
       }
-    }
+    } 
     return false;
   }
 
@@ -100,7 +118,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
       if (temp.typ.typ == NameTy.BOOL){
         return true;
       }
-    } else if (decType == "func"){
+    } 
+    else if (decType == "func"){
       FunctionDec temp = (FunctionDec) def;
       if (temp.result.typ == NameTy.BOOL){
         return true;
@@ -130,7 +149,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       if (temp.typ.typ == NameTy.VOID){
         return true;
       }
-    }
+    } 
     return false;
   }
 /* 
@@ -170,44 +189,84 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 */
   public String getDecType(Dec temp){
-    SimpleDec simp = new SimpleDec(0, 0, null, null);
-    ArrayDec arr = new ArrayDec(0, 0, null, null, 0);
-    FunctionDec fun = new FunctionDec(0, 0, null, null, null, null);
-    if (temp.getClass()== simp.getClass()){
-      return "simple";
-    } else if (temp.getClass() == fun.getClass()) {
-      return "func";
-    } else if (temp.getClass() == arr.getClass()){
-      return "array";
+    if (temp!=null){
+      SimpleDec simp = new SimpleDec(0, 0, null, null);
+      ArrayDec arr = new ArrayDec(0, 0, null, null, 0);
+      FunctionDec fun = new FunctionDec(0, 0, null, null, null, null);
+      if (temp.getClass()== simp.getClass()){
+        return "simple";
+      } else if (temp.getClass() == fun.getClass()) {
+        return "func";
+      } else if (temp.getClass() == arr.getClass()){
+        return "array";
+      }
     }
     return null;
   }
 
   public void printArrayList(ArrayList<NodeType> list, int l){
-    for (NodeType n : list){
-      String decType = getDecType(n.def);
-      indent(l+1);
-      String type;
-      if (isInteger(n.def, decType)){
-        type = "int";
-      } else if (isBoolean(n.def, decType)){
-        type = "bool";
-      } else {
-        if (decType == "simple" || decType == "array"){
-          System.out.println("Error, variable cannot be void, changed to int.");
+    if (list != null){
+      for (NodeType n : list){
+        String decType = getDecType(n.def);
+        indent(l+1);
+        String type;
+        if (isInteger(n.def, decType)){
           type = "int";
+        } else if (isBoolean(n.def, decType)){
+          type = "bool";
         } else {
-          type = "void";
+          if (decType == "simple" || decType == "array"){
+            type = "int";
+          } else {
+            type = "void";
+          }
+        }
+        if (decType == "simple"){
+          System.out.println(n.name+ ": "+ type);
+        }  else if (decType == "func"){
+          FunctionDec temp = (FunctionDec)n.def;
+          VarDecList decList = temp.params;
+          ArrayList<Integer> paramList = getParamTypes(decList);
+          System.out.print(n.name+ ": (");
+          if (paramList.size() !=0){
+            for (int i : paramList){
+              if (i == NameTy.INT){
+                System.out.print("int,");
+              } else if (i == NameTy.BOOL){
+                System.out.print("bool,");
+              } else if (i == NameTy.VOID){
+                System.out.print("void,");
+              }
+            }
+          }
+          System.out.println(") -> "+type);
+        } else if (decType == "array"){
+          System.out.println(n.name+ ": "+ type + "*");
         }
       }
-      if (decType == "simple"){
-        System.out.println(n.name+ ": "+ type);
-      }  else if (decType == "func"){
-        System.out.println(n.name+ ": ("+ type+")");
-      } else if (decType == "array"){
-        System.out.println(n.name+ ": "+ type + "*");
-      }
     }
+  }
+
+  public ArrayList<Integer> getParamTypes(VarDecList list){
+    ArrayList<Integer> types = new ArrayList<Integer>();
+    while (list!=null){
+      String decType = getDecType(list.head);
+      int type = findType(list.head, decType);
+      types.add(type);
+      list = list.tail;
+    }
+    return types;
+  }
+
+  public ArrayList<Integer> getArgTypes(ExpList list){
+    ArrayList<Integer> types = new ArrayList<Integer>();
+    while (list!=null){
+      String decType = getDecType(list.head.dtype);
+      int type = findType(list.head.dtype, decType);
+      types.add(type);
+      list = list.tail;
+    }
+    return types;
   }
 
   public void printSymTable(){
@@ -219,9 +278,15 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void printGlobal(){
+    deleteSpecific("0", "input");
+    deleteSpecific("0", "output");
     if (table.containsKey(Integer.toString(0))){
       ArrayList<NodeType> list = table.get(Integer.toString(0));
       printArrayList(list, 0);
+      NodeType n = list.get(list.size()-1);
+      if (!n.name.equals("main")){
+        System.out.println("Main function is missing or not the final function.");
+      }
     }
   }
 
@@ -252,35 +317,34 @@ public class SemanticAnalyzer implements AbsynVisitor {
   
   public void visit( AssignExp exp, int level ) {
     int index = lookupAll(exp.lhs.name, level);
-    String lhsDecType;
-    String lhsType;
     if (index != -1){
+      exp.lhs.accept( this, level );
+      exp.rhs.accept( this, level );
       ArrayList<NodeType> list = table.get(Integer.toString(index));
       NodeType n = findNodeType(exp.lhs.name, list);
-      lhsType = getDecType(n.def);
-      if (isBoolean(n.def, lhsType)){
-        lhsType = "class absyn.BoolExp";
-      } else if (isVoid(n.def, lhsType)){
-        lhsType = "void";
-      } else {
-        lhsType = "class absyn.IntExp";
-      }
-      String rhsType = exp.rhs.getClass().toString();
-      if(rhsType.equals(lhsType)){
-        System.out.println("here");
+      int lhsType = findType(n.def, getDecType(n.def));
+      int rhsType = findType(exp.rhs.dtype, getDecType(exp.rhs.dtype)); 
+      if (lhsType == rhsType){
         exp.dtype = n.def;
       } else {
-        System.out.println("Type mismatch for variable "+n.name +" changing to "+rhsType);
-        if (rhsType.equals("class absyn.IntExp")){
+        System.out.println("Type mismatch for variable "+n.name +", changing "+n.name+ " type to match. Row: " + exp.row + ", col: "+ exp.col);
+        deleteSpecific(Integer.toString(index), n.name);
+        if (rhsType==NameTy.INT){
           SimpleDec temp = new SimpleDec(0,0, new NameTy(0,0,NameTy.INT), null);
-          deleteSpecific(Integer.toString(index), n.name);
+          insert(Integer.toString(index), temp, n.level, n.name);
+        } else if (rhsType == NameTy.BOOL){
+          SimpleDec temp = new SimpleDec(0,0, new NameTy(0,0,NameTy.BOOL), null);
+          insert(Integer.toString(index), temp, n.level, n.name);
+        } else {
+          SimpleDec temp = new SimpleDec(0,0, new NameTy(0,0,NameTy.VOID), null);
           insert(Integer.toString(index), temp, n.level, n.name);
         }
       }
-      exp.lhs.accept( this, level );
-      exp.rhs.accept( this, level );
     } else {
-      System.out.println("Error, variable undefined.");
+      SimpleDec newExp = new SimpleDec(exp.lhs.row, exp.lhs.col, new NameTy(exp.row, exp.col, NameTy.INT), exp.lhs.name);
+      exp.dtype = newExp;
+      insert(Integer.toString(level), newExp, index, exp.lhs.name);
+      System.out.println("Error, variable undefined. Row: " + exp.row + ", col: "+ exp.col);
     } 
   }
 
@@ -318,17 +382,63 @@ public class SemanticAnalyzer implements AbsynVisitor {
 }
 
   public void visit( VarExp exp, int level ) {
+    int index = lookupAll(exp.name.name, level);
     exp.name.accept( this, ++level );
+    if (index != -1){
+      ArrayList<NodeType> list = table.get(Integer.toString(index));
+      NodeType n = findNodeType(exp.name.name, list);
+      String type = getDecType(n.def);
+      if (isInteger(n.def, type)){
+        exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.INT), null);
+      } else if (isBoolean(n.def, type)){
+        exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.BOOL), null);
+      } else {
+        exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.VOID), null);
+      }
+    } else {
+      SimpleDec newExp = new SimpleDec(exp.row, exp.col, new NameTy(exp.row, exp.col, NameTy.INT), exp.name.name);
+      exp.dtype = newExp;
+      insert(Integer.toString(index), newExp, index, exp.name.name);
+      System.out.println("Error, variable is undeclared. Adding declaration as int. Row: " + exp.row + ", col: "+ exp.col);
+    }
   }
 
   public void visit( IndexVar exp, int level ) {
     if (exp.index!=null)
       exp.index.accept( this, ++level );
+      String type = getDecType(exp.index.dtype);
+      if (isBoolean(exp.index.dtype, type) || isVoid(exp.index.dtype, type)){
+        System.out.println("Error, index is not Integer. Row: " + exp.row + ", col: "+ exp.col);
+      }
   }
 
   public void visit( CallExp exp, int level ) {
-    if (exp.args!=null)
-      exp.args.accept( this, ++level );
+    int index = lookupAll(exp.func, level);
+    if (index!=-1){
+      ArrayList<NodeType> list = table.get(Integer.toString(index));
+      NodeType n = findNodeType(exp.func, list);
+      String type = getDecType(n.def);
+      if (isInteger(n.def, type)){
+        exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.INT), null);
+      } else if (isBoolean(n.def, type)){
+        exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.BOOL), null);
+      } else {
+        exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.VOID), null);
+      }
+      if (exp.args!=null){
+        exp.args.accept( this, ++level );
+        FunctionDec temp = (FunctionDec) n.def;
+        VarDecList decList = temp.params;
+        ArrayList<Integer> paramList = getParamTypes(decList);
+        ArrayList<Integer> argList = getArgTypes(exp.args);
+        if (!paramList.equals(argList)){
+          System.out.println("Error, arguments do not match function declaration. Row "+exp.row+", col "+exp.col);
+        }
+      }
+    } else {
+      System.out.println("Error, function is undeclared. Row: " + exp.row + ", col: "+ exp.col);
+    }
+      
   }
 
   public void visit( WhileExp exp, int level ){
@@ -343,6 +453,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     printArrayList(list, level);
     indent(level);
     System.out.println("Leaving the while block");
+    delete(Integer.toString(level));
     level--;
   }
 
@@ -364,7 +475,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( FunctionDec exp, int level ){
-    if (lookup(exp.func, level) == false){
+    //check if the function has been declared before
+    int index = lookupAll(exp.func, level);
+    //if not, add it
+    if (index==-1){
       insert(Integer.toString(level), exp, level, exp.func);
       exp.result.accept( this, level );
       level++;
@@ -380,16 +494,46 @@ public class SemanticAnalyzer implements AbsynVisitor {
       System.out.println("Leaving the scope for function "+exp.func);
       delete(Integer.toString(level));
       level--;
+    //if already declared - check if it was just the prototype (if there was no body)
     } else {
-      System.out.println("Error, function of this name is already declared in this scope");
+      ArrayList<NodeType> list1 = table.get(Integer.toString(index));
+      NodeType n = findNodeType(exp.func, list1);
+      FunctionDec temp = (FunctionDec)n.def;
+      if (temp.body.getClass().toString().equals("class absyn.NilExp")){
+        deleteSpecific(Integer.toString(level), exp.func);
+        insert(Integer.toString(level), exp, level, exp.func);
+        exp.result.accept( this, level );
+        level++;
+        indent(level);
+        System.out.println("Entering the scope for function "+exp.func);
+        if ( exp.params != null)
+          exp.params.accept( this, level );
+        if (exp.body.getClass().toString() != "NilExp")
+          exp.body.accept( this, level );
+        ArrayList<NodeType> list = table.get(Integer.toString(level));
+        printArrayList(list, level);
+        indent(level);
+        System.out.println("Leaving the scope for function "+exp.func);
+        delete(Integer.toString(level));
+        level--;
+
+      //if there was a body, function is being redefined
+      } else {
+        System.out.println("Error, function of this name is already declared in this scope. Row: " + exp.row + ", col: "+ exp.col);
+      }
     }
   }
 
   public void visit( SimpleDec exp, int level ){
     if (lookup(exp.name, level) == false){
+      int type = findType(exp, "simple");
+      if (type == NameTy.VOID){
+        System.out.println("Error, variable "+ exp.name+" declared as void, changed to int. Row: " + exp.row + ", col: "+ exp.col);
+        exp = new SimpleDec(exp.row, exp.col, new NameTy(0,0,NameTy.INT), exp.name);
+      }
       insert(Integer.toString(level), exp, level, exp.name);
     } else {
-      System.out.println("Error, variable of this name already exists in this scope.");
+      System.out.println("Error, variable "+ exp.name+" of this name already exists in this scope. Not added. Row: " + exp.row + ", col: "+ exp.col);
     }
     //printSymTable();
     //exp.typ.accept( this, ++level );
@@ -397,9 +541,14 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( ArrayDec exp, int level ){
     if (lookup(exp.name, level) == false){
+      int type = findType(exp, "array");
+      if (type == NameTy.VOID){
+        System.out.println("Error, array "+ exp.name+" declared as void, changed to int. Row: " + exp.row + ", col: "+ exp.col);
+        exp = new ArrayDec(exp.row, exp.col, new NameTy(0,0,NameTy.INT), exp.name, exp.size);
+      }
       insert(Integer.toString(level), exp, level, exp.name);
     } else {
-      System.out.println("Error, variable of this name already exists in this scope.");
+      System.out.println("Error, variable "+ exp.name+" of this name already exists in this scope. Not added. Row: " + exp.row + ", col: "+ exp.col);
     }
     //printSymTable();
     //exp.typ.accept( this, ++level );
@@ -407,6 +556,17 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( ReturnExp retExp, int level ){
     retExp.exp.accept( this, ++level );
+    ArrayList<NodeType> list = table.get(Integer.toString(level-1));
+    NodeType n = list.get(list.size()-1);
+    String decType = getDecType(n.def);
+    int returnType = findType(n.def, decType);
+    decType = getDecType(retExp.exp.dtype);
+    int type = findType(retExp.exp.dtype, decType);
+    if (returnType == type){
+      retExp.dtype = new SimpleDec(0,0, new NameTy(0,0, type), null);
+    } else {
+      System.out.println("Error, incompatible return type, Row: " + retExp.row + ", col: "+ retExp.col);
+    }
   }
 
 
@@ -427,57 +587,25 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
   
   public void visit( OpExp exp, int level ) {
-    switch( exp.op ) {
-      case OpExp.PLUS:
-        //System.out.println( " + " );
-        break;
-      case OpExp.MINUS:
-        //System.out.println( " - " );
-        break;
-      case OpExp.TIMES:
-        //System.out.println( " * " );
-        break;
-      case OpExp.OVER:
-        //System.out.println( " / " );
-        break;
-      case OpExp.EQ:
-        //System.out.println( " = " );
-        break;
-      case OpExp.LT:
-        //System.out.println( " < " );
-        break;
-      case OpExp.GT:
-        //System.out.println( " > " );
-        break;
-      case OpExp.UMINUS:
-        //System.out.println( " - " );
-        break;
-      case OpExp.NEQ:
-        //System.out.println( " != ");
-        break;
-      case OpExp.NOT:
-        //System.out.println( " ~ ");
-        break;
-      case OpExp.AND:
-        //System.out.println( " && ");
-        break;
-      case OpExp.OR:
-        //System.out.println( " || ");
-        break;
-      case OpExp.GTE:
-        //System.out.println( " >= ");
-        break;
-      case OpExp.LTE:
-        //System.out.println( " <= ");
-        break;
-      default:
-        //System.out.println( "Unrecognized operator at line " + exp.row + " and column " + exp.col);
-    }
     level++;
-    if (exp.left.getClass().toString() != "NilExp")
-       exp.left.accept( this, level );
+    int rhs = -1;
+    int lhs = -1;
     if (exp.right != null)
-       exp.right.accept( this, level );
+      exp.right.accept( this, level );
+      String rhsDecType = getDecType(exp.right.dtype);
+      rhs = findType(exp.right.dtype, rhsDecType);
+    if (exp.left.getClass().toString() != "NilExp")
+      exp.left.accept( this, level );
+      String lhsDecType = getDecType(exp.left.dtype);
+      lhs = findType(exp.left.dtype, lhsDecType);
+    if (lhs == rhs){
+      exp.dtype = new SimpleDec(0,0, new NameTy(0,0, lhs), null);
+    } else if (lhs == -1 && rhs!=-1){
+      exp.dtype = new SimpleDec(0,0, new NameTy(0,0, lhs), null);
+    } else {
+      System.out.println("Error, incompatible data types. Row: " + exp.row + ", col: "+ exp.col);
+    }
+
   }
 
   public void visit( NodeType exp, int level ) {

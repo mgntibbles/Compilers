@@ -1,5 +1,13 @@
-int func(int x){
-    int v;
-    bool f;
-    f = 8;
+int func(int x, int b);
+
+int func(int x, int b){
+    return x-b;
 }
+
+void main(void){
+    int a;
+    void b[];
+    a = func(a, b);
+    return a;
+}
+

@@ -1,0 +1,17 @@
+1.abs
+The abstract syntax tree is:
+FunctionDec: func
+    Type:  int 
+        CompoundExp: 
+        ArrayDec: v Size: 9
+            Type:  int 
+        AssignExp:
+            IndexVar: v
+                IntExp: 0
+            CallExp: output
+                VarExp: 
+                    SimpleVar: x
+        ReturnExp: 
+            OpExp: + 
+                IntExp: 1
+                IntExp: 9
