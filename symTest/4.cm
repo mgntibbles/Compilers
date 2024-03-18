@@ -1,0 +1,16 @@
+/* Created by: Megan Tibbles
+  Purpose: Test file. Error in the if condition, it is not Boolean. Index for x causes an error because it is boolean and should be int */
+  
+int func(int x[]){
+    bool foo;
+    int b;
+    if(x=9){
+        int j;
+        j = 9+x[9];
+    }
+    x[true] = 10;
+}
+
+void main(void){
+
+}

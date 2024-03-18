@@ -1,13 +1,19 @@
+/* Created by: Megan Tibbles
+  Purpose: Test file. Program should run successfully with this file.*/
+
 int func(int x, int b);
 
 int func(int x, int b){
+    if (x>9){
+        int r;
+    }
     return x-b;
 }
 
 void main(void){
     int a;
-    void b[];
+    int b;
     a = func(a, b);
-    return a;
+
 }
 

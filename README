@@ -1,5 +1,5 @@
 Author: Megan Tibbles
-Date: March 4, 2024
+Date: March 18, 2024
 
 To compile: 
 make
@@ -8,23 +8,30 @@ To run scanner:
 java -cp {path to java_cup.jar}:. Scanner < {path to filename}
 ex. java -cp java-cup.jar:. Scanner < test/1.cm
 
-To run Parser and print AST:
-java -cp {path to java_cup.jar}:. Main {path to filename}
-ex. java -cp java-cup.jar:. Main test/1.cm
+To run Parser and print AST to file:
+java -cp {path to java_cup.jar}:. Main {path to filename} -a file.abs
+ex. java -cp java-cup.jar:. Main test/1.cm -a 1.abs
+
+To run semantic parsing and print both the AST and Symbol table
+java -cp {path to java_cup.jar}:. Main {path to filename} 
+ex. java -cp java-cup.jar:. Main test/1.cm 
+
+To run semantic parsing and print the symbol table to an output file
+java -cp {path to java_cup.jar}:. Main {path to filename} -s file.sym
+ex. java -cp java-cup.jar:. Main test/1.cm -s 1.sym
 
 To clean:
 make clean
 
-Test files are found in the test folder. They have a comment at the top of each that describes the expected output (error or no error).
+Test files are found in the symTest folder. They are described in the documentation.
 However, I will repeat the expected output here:
-1.cm: successfully output a AST, no errors.
-2.cm: will produce error for invalid/missing parameters but will still print AST.
-3.cm: will produce error for invalid/missing array size but will still print AST.
-4.cm: will produce error for invalid/missing while loop condition but will still print AST.
-5.cm: will produce error for invalid/missing while loop body but will still print AST.
-6.cm will produce error for missing function body but will still print AST. 
+1.cm: successfully output a symbol table, no errors.
+2.cm: Will produce an error for redefining a variable and for using an undefined variable. Another error is from having no main function
+3.cm: Will produce an error for defining a variable as void. Another will be produced by the return statement because it returns an int but the function declaration states a boolean will be returned
+4.cm: Will produce an error for the if condition because it is not Boolean. Another will be produces from the index because it is not an int.
+5.cm: Will produce and error for the wrong type of arguments in a function call. Another for assigning an int to a bool variable. Another for trying to add a boolean and an int. Another for trying to assign that invalid operation to an int variable. And finally, the Main function is not at the end of the function.
 
 Notes:
-The C1-Package provided was used as starting code for this assignment.
-Right now the makefile uses cm.cup.ordered, this is the most updated version of cm.cup.
-It contains the error recovery and reduced grammar. cm.cup.layered has the fully implemented grammar with no reductions.
+The makefile uses cup.ordered but there are other cup files included in my submission. As mentioned above, if you do not include command line arguments then both the AST and the symbol table will be printed. include -s if you want it just to be printed to a file. 
+- Only one command line argument can be used at once, only -a or -s.
+- output file must be deleted before it can be overwritten.

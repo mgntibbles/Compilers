@@ -1,0 +1,19 @@
+
+int boo(bool w);
+
+void main(void){
+    int c;
+    bool d;
+    c = boo(c);
+    d = c;
+}
+
+int boo(void){
+    int b;
+    int c;
+    while(b<9){
+        b = b+1;
+    }
+    b = 9+true;
+    return c;
+}

@@ -1,0 +1,10 @@
+/* Created by: Megan Tibbles
+  Purpose: Test file. Causes an error when it redefines a variable, then when it tries to access a variable that is undefined. And there is also no main function.*/
+  
+int x[10];
+
+void add(int b, int c){
+    int b;
+    c = x[1]+b;
+    z = b;
+}

@@ -1,9 +1,0 @@
-1.sym
-The symbol table is:
-Entering the global Scope: 
-    Entering the scope for function func
-        x: int*
-        v: int*
-    Leaving the scope for function func
-    func: (int)
-Leaving the global scope

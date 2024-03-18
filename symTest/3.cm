@@ -1,0 +1,12 @@
+/* Created by: Megan Tibbles
+  Purpose: Test file. Declares a variable as void which causes and error. Tries to return the wrong data type causing an error.*/
+  
+bool func(int x){
+    void b;
+    b = 8;
+    return b;
+}
+
+void main(void){
+    int x;
+}
