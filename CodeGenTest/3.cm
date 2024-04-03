@@ -1,0 +1,13 @@
+/* Function add takes a int as a parameter, adds 1 to it and returns it. 
+ The main function uses a while loop, the add function, and the output function to display 1 to 5 */
+int add (int n){
+    return n+1  ;
+}
+void main(void) {
+    int x;
+    x = 1;
+    while(x<6){
+        output(x);
+        x =add(x);
+    }
+}

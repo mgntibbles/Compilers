@@ -81,7 +81,7 @@ class Main {
         visitor2.printGlobal();
         System.out.println("Leaving the global scope");
       }
-      if (!SHOW_TABLE && !SHOW_TREE){
+      if (!SHOW_TABLE && !SHOW_TREE && syntaxCheck){
         PrintStream outNull = System.out;
         System.setOut(new PrintStream(new FileOutputStream("/dev/null")));
         SemanticAnalyzer visitor2 = new SemanticAnalyzer();

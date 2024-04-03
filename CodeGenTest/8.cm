@@ -1,0 +1,9 @@
+/*2 Errors. Incompatible return types for one of the return statements.
+    Also, missin main*/
+int foo(bool y){
+    if (y){
+        return 2;
+    } else {
+        return y;
+    }
+}

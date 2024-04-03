@@ -1,0 +1,20 @@
+/* 4 errors Incompatible return type for foo.
+    test condition for if is not boolean.
+    arguments do not match. Should be int, int but is called with bool
+    variable b undefined */
+int x;
+
+int foo(int a, int b){
+    return true;
+}
+
+void main(void){
+    int y;
+    y = 9;
+    x = input();
+    if (foo(x, 1)){
+        
+    }
+    y = foo(true);
+    b = y;
+}

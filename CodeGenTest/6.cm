@@ -1,0 +1,11 @@
+/* Uses a function that has a prototype but not body, get error undefined function.
+    Forces program to stop */
+int foo(void);
+
+void main(void){
+    int x;
+    x = 9;
+    if (x == 9){
+        foo();
+    }
+}

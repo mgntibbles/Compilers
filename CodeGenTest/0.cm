@@ -1,0 +1,14 @@
+void sub(int a, int b){
+    add(a);
+    return a - b;
+}
+
+void add(void);
+
+void main(void){
+    int a;
+    int b;
+    a = input();
+    b = add(1,2);
+    output(sub(a, 3));
+}

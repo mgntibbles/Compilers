@@ -1,0 +1,14 @@
+/* 3 Errors. One is a syntax error for no parameters for foo
+ One is a syntax error for return void 
+ One is semantic error for int foo as well with no parameters*/
+int x;
+
+int foo(){
+    output(1);
+    return void;
+}
+
+void main(void){
+    x = 2;
+    foo();
+}

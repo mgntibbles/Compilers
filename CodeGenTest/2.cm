@@ -1,0 +1,21 @@
+/* 2 global variables.
+    Function check checks if a int is less than or equal to 10. 
+    If yes it returns 10.
+    If no, returns the square. 
+    Main asks for an int and sends it to check function and outputs it*/
+int x;
+int y;
+
+int check(int v){
+    if (v <= 10){
+        return 10;
+    } else {
+        return v*v;
+    }
+}
+
+void main(void) {
+    x = input(); 
+    y = check(x);
+    output(y);
+}

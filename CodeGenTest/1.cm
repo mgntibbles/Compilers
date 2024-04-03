@@ -1,0 +1,9 @@
+/* declares two global variable, reads in one value from user. Adds 1 and outputs it. */
+int x;
+int y;
+
+void main(void) {
+    x = input(); 
+    y = x + 1;
+    output(y);
+}

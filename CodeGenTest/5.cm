@@ -1,0 +1,6 @@
+/* 2 Errors. type mismatch for variable j. Undeclared variable x*/
+void main(void){
+    bool j;
+    j = 1;
+    output(x);
+}

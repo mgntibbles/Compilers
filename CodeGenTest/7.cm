@@ -1,0 +1,15 @@
+/* 2 Errors. Incompatible return type for function add.
+ Test condition is not boolean.*/
+void add(int a){
+    return a;
+}
+void main(void){
+    int x;
+    int b;
+    x = 9;
+    if (x + 8){
+        b = add(x);
+        x = x + 1;
+    }
+    output(x);
+}

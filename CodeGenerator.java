@@ -99,12 +99,13 @@ public class CodeGenerator implements AbsynVisitor {
     trees.accept(this, initFO, false);
     //generale finale
     if (mainEntry == -1){
-        System.out.println("Error: Missing main");
+        System.err.println("Error: Missing main");
+        emitRO("HALT",0,0,0,"Error, forced to stop");
     }
     //emitBackup(savedLoc2);
     //emitRM("LDA",pc, highEmitLoc - (emitLoc+1), pc, "jump to finale");
     //emitRestore();
-    System.out.println("* Finale");
+    System.out.println("* Finale" + mainEntry);
     globalOffset -=1;
     emitRM("ST", fp, globalOffset+ofpFO, fp, "push ofp");
     emitRM("LDA", fp, globalOffset, fp, "push frame");
@@ -125,7 +126,7 @@ public class CodeGenerator implements AbsynVisitor {
 
   public void visit( DecList decList, int offset, boolean isAddress ) {
     while( decList != null ) {
-      decList.head.accept( this, offset, false);
+      decList.head.accept( this, offset--, false);
       decList = decList.tail;
     } 
   }
@@ -213,17 +214,22 @@ public class CodeGenerator implements AbsynVisitor {
   public void visit( IndexVar exp, int offset, boolean isAddress ) {
     emitComment("looking for "+exp.name);
     Dec temp = declarations.get(exp.name);
-    VarDec varDtype = (VarDec)temp;
-    if (exp.index!=null)
-      if (varDtype.nestLevel == 0){
-        emitRM("LD", ac, varDtype.offset, gp, "load address");
-        emitRM("ST", ac, offset--, gp, "stor array");
+    if (temp!=null){
+      VarDec varDtype = (VarDec)temp;
+      if (exp.index!=null)
+        if (varDtype.nestLevel == 0){
+          emitRM("LD", ac, varDtype.offset, gp, "load address");
+          emitRM("ST", ac, offset--, gp, "stor array");
+        } else {
+          emitRM("LD", ac, varDtype.offset, fp, "load address");
+          emitRM("ST", ac, offset--, fp, "store array");
+        }
+        exp.index.accept( this, offset, false);
+          //emitRM("ST", ac, offset, fp, "");
       } else {
-        emitRM("LD", ac, varDtype.offset, fp, "load address");
-        emitRM("ST", ac, offset--, fp, "store array");
+        System.err.println("Undefined variable");
+        emitRO("HALT",0,0,0," Error, forced ending");
       }
-      exp.index.accept( this, offset, false);
-        //emitRM("ST", ac, offset, fp, "");
   }
 
   public void visit( CallExp exp, int offset, boolean isAddress ) {
@@ -247,7 +253,12 @@ public class CodeGenerator implements AbsynVisitor {
     } else {
       Dec temp = declarations.get(exp.func);
       FunctionDec varDtype = (FunctionDec)temp;
-      entry = varDtype.funaddr;
+      if (varDtype == null){
+        System.err.println("Using undefined function");
+        emitRO("HALT",0,0,0,"Error, forced ending");
+      } else {
+        entry = varDtype.funaddr;
+      }
     }
     emitComment("function call: "+exp.func);
     emitRM("ST", fp, offset+ofpFO, fp, "store current fp");
@@ -293,22 +304,27 @@ public class CodeGenerator implements AbsynVisitor {
     //System.out.println("simplevar:"+offset);
     emitComment("looking for "+exp.name);
     Dec temp = declarations.get(exp.name);
-    VarDec varDtype = (VarDec)temp;
-    if (isAddress){
-        if (varDtype.nestLevel == 0){
-          emitRM("LDA", ac, varDtype.offset, gp, "load address");
-        } else {
-          emitRM("LDA", ac, varDtype.offset, fp, "load address");
-        }
-        //emitRM("ST", ac, offset, fp, "");
-    } else {
-      if (varDtype.nestLevel == 0){
-        emitRM("LD", ac, varDtype.offset, gp, "load value");
+    if (temp != null){
+      VarDec varDtype = (VarDec)temp;
+      if (isAddress){
+          if (varDtype.nestLevel == 0){
+            emitRM("LDA", ac, varDtype.offset, gp, "load address");
+          } else {
+            emitRM("LDA", ac, varDtype.offset, fp, "load address");
+          }
+          //emitRM("ST", ac, offset, fp, "");
       } else {
-        emitRM("LD", ac, varDtype.offset, fp, "load value");
+        if (varDtype.nestLevel == 0){
+          emitRM("LD", ac, varDtype.offset, gp, "load value");
+        } else {
+          emitRM("LD", ac, varDtype.offset, fp, "load value");
+        }
       }
+    } else {
+      System.err.println("Undefined variable");
+      emitRO("HALT",0,0,0," Error, forced ending");
     }
-  }
+}
 
   public void visit( NilExp exp, int offset, boolean isAddress ){
 
@@ -319,26 +335,28 @@ public class CodeGenerator implements AbsynVisitor {
     offset = -2;
     returnOffset = offset;
     global=1; // in local
-    int savedLoc = emitSkip(1);
-    declarations.put(exp.func, exp);
     if (exp.func.equals("main")){
-        mainEntry = emitLoc;
+        mainEntry = emitLoc+1;
         globalOffset = offset;
     }
-    exp.funaddr = emitLoc;;
-    emitRM("ST", ac, retFO, fp, "store return");
+    exp.funaddr = emitLoc+1;
+    declarations.put(exp.func, exp);
     exp.result.accept( this, offset, false);
     if ( exp.params != null)
       exp.params.accept( this, offset, false);
       offset = returnOffset;
-    if (exp.body.getClass().toString() != "NilExp"){
-        exp.body.accept( this, offset, false);
+    if (!(exp.body instanceof NilExp)){
+      int savedLoc = emitSkip(1);
+      emitRM("ST", ac, retFO, fp, "store return");
+      exp.body.accept( this, offset, false);
+      emitRM("LD", pc, retFO, fp, "return back to the caller");
+      int savedLoc2 = emitSkip(0);
+      emitBackup(savedLoc);
+      emitRM_Abs("LDA", pc, savedLoc2, "skip function");
+      emitRestore();
+    } else {
+      declarations.put(exp.func, null);
     }
-    emitRM("LD", pc, retFO, fp, "return back to the caller");
-    int savedLoc2 = emitSkip(0);
-    emitBackup(savedLoc);
-    emitRM_Abs("LDA", pc, savedLoc2, "skip function");
-    emitRestore();
     global = 0;
   }
 
