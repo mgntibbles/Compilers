@@ -93,7 +93,7 @@ public class CodeGenerator implements AbsynVisitor {
     emitBackup(savedLoc);
     emitRM_Abs("LDA", pc, savedLoc2, "");
     emitRestore();
-    savedLoc2 = emitSkip(1);
+    //savedLoc2 = emitSkip(1);
     System.out.println("* End Standard prelude.");
     //make a request to the visit method for DecList
     trees.accept(this, initFO, false);
@@ -101,9 +101,9 @@ public class CodeGenerator implements AbsynVisitor {
     if (mainEntry == -1){
         System.out.println("Error: Missing main");
     }
-    emitBackup(savedLoc2);
-    emitRM("LDA",pc, highEmitLoc - (emitLoc+1), pc, "jump to finale");
-    emitRestore();
+    //emitBackup(savedLoc2);
+    //emitRM("LDA",pc, highEmitLoc - (emitLoc+1), pc, "jump to finale");
+    //emitRestore();
     System.out.println("* Finale");
     globalOffset -=1;
     emitRM("ST", fp, globalOffset+ofpFO, fp, "push ofp");
@@ -132,7 +132,7 @@ public class CodeGenerator implements AbsynVisitor {
 
   public void visit( VarDecList varDecList, int offset, boolean isAddress ) {
     while( varDecList != null ) {
-      varDecList.head.accept( this, offset, false);
+      varDecList.head.accept( this, offset--, false);
       varDecList = varDecList.tail;
       returnOffset++;
     } 
@@ -319,15 +319,14 @@ public class CodeGenerator implements AbsynVisitor {
     offset = -2;
     returnOffset = offset;
     global=1; // in local
-    exp.funaddr = emitLoc-1;
-    int savedLoc = -1;
-    emitRM("ST", ac, retFO, fp, "store return");
+    int savedLoc = emitSkip(1);
+    declarations.put(exp.func, exp);
     if (exp.func.equals("main")){
-        mainEntry = emitLoc-1;
+        mainEntry = emitLoc;
         globalOffset = offset;
-    } else {
-      savedLoc = emitSkip(1);
     }
+    exp.funaddr = emitLoc;;
+    emitRM("ST", ac, retFO, fp, "store return");
     exp.result.accept( this, offset, false);
     if ( exp.params != null)
       exp.params.accept( this, offset, false);
@@ -336,25 +335,23 @@ public class CodeGenerator implements AbsynVisitor {
         exp.body.accept( this, offset, false);
     }
     emitRM("LD", pc, retFO, fp, "return back to the caller");
-    declarations.put(exp.func, exp);
-    if (savedLoc != -1){
-      int savedLoc2 = emitSkip(0);
-      emitBackup(savedLoc);
-      emitRM_Abs("LDA", pc, savedLoc2, "skip function");
-      emitRestore();
-    }
+    int savedLoc2 = emitSkip(0);
+    emitBackup(savedLoc);
+    emitRM_Abs("LDA", pc, savedLoc2, "skip function");
+    emitRestore();
+    global = 0;
   }
 
   public void visit( SimpleDec exp, int offset, boolean isAddress ){
     System.out.println("* processing "+ exp.name);
     if (global == 0){
-      globalOffset+=1;
+      globalOffset-=1;
     }
     exp.offset = offset;
+    //System.out.println(offset+" "+exp.name);
     exp.nestLevel = global;
     exp.typ.accept( this, offset, false);
     declarations.put(exp.name, exp);
-    global = 0;
     returnOffset=offset;
   }
 
