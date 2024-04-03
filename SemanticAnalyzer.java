@@ -258,32 +258,32 @@ public class SemanticAnalyzer implements AbsynVisitor {
     for( int i = 0; i < level * SPACES; i++ ) System.out.print( " " );
   }
 
-  public void visit( ExpList expList, int level ) {
+  public void visit( ExpList expList, int level, boolean flag ) {
     while( expList != null ) {
-        expList.head.accept( this, level );
+        expList.head.accept( this, level, flag );
         expList = expList.tail;
       } 
   }
 
-  public void visit( DecList decList, int level ) {
+  public void visit( DecList decList, int level, boolean flag ) {
     while( decList != null ) {
-        decList.head.accept( this, level );
+        decList.head.accept( this, level, flag);
         decList = decList.tail;
       } 
   }
 
-  public void visit( VarDecList varDecList, int level ) {
+  public void visit( VarDecList varDecList, int level, boolean flag ) {
     while( varDecList != null ) {
-        varDecList.head.accept( this, level );
+        varDecList.head.accept( this, level, flag);
         varDecList = varDecList.tail;
       } 
   }
   
-  public void visit( AssignExp exp, int level ) {
+  public void visit( AssignExp exp, int level, boolean flag ) {
     int index = lookupAll(exp.lhs.name, level);
     if (index != -1){
-      exp.lhs.accept( this, level );
-      exp.rhs.accept( this, level );
+      exp.lhs.accept( this, level, flag);
+      exp.rhs.accept( this, level, flag );
       ArrayList<NodeType> list = table.get(Integer.toString(index));
       NodeType n = findNodeType(exp.lhs.name, list);
       int lhsType = findType(n.def, getDecType(n.def));
@@ -314,16 +314,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
     } 
   }
 
-  public void visit( IfExp exp, int level ) {
+  public void visit( IfExp exp, int level, boolean flag ) {
     level++;
     indent(level);
     System.out.println("Entering the scope for an if block:");
     if (exp.test != null){
-      exp.test.accept( this, level );
+      exp.test.accept( this, level, flag);
       String testDecType = getDecType(exp.test.dtype);
       int testType = findType(exp.test.dtype, testDecType);
       if (testType == NameTy.BOOL){
-        exp.thenpart.accept( this, level );
+        exp.thenpart.accept( this, level, flag);
         ArrayList<NodeType> list = table.get(Integer.toString(level));
         printArrayList(list, level);
         indent(level);
@@ -333,7 +333,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
         if (exp.elsepart.getClass() != i.getClass()){
           indent(level);
           System.out.println("Entering the scope for an else block:");
-          exp.elsepart.accept( this, level );
+          exp.elsepart.accept( this, level, flag);
           printArrayList(list, level);
           indent(level);
           System.out.println("Leaving the else block");
@@ -346,17 +346,17 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( IntExp exp, int level ) {
+  public void visit( IntExp exp, int level, boolean flag ) {
     exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.INT), null);
   }
 
-  public void visit( BoolExp exp, int level ) {
+  public void visit( BoolExp exp, int level, boolean flag ) {
     exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.BOOL), null);
 }
 
-  public void visit( VarExp exp, int level ) {
+  public void visit( VarExp exp, int level, boolean flag ) {
     int index = lookupAll(exp.name.name, level);
-    exp.name.accept( this, ++level );
+    exp.name.accept( this, ++level, flag);
     if (index != -1){
       ArrayList<NodeType> list = table.get(Integer.toString(index));
       NodeType n = findNodeType(exp.name.name, list);
@@ -376,16 +376,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( IndexVar exp, int level ) {
+  public void visit( IndexVar exp, int level, boolean flag  ) {
     if (exp.index!=null)
-      exp.index.accept( this, ++level );
+      exp.index.accept( this, ++level, flag);
       String type = getDecType(exp.index.dtype);
       if (isBoolean(exp.index.dtype, type) || isVoid(exp.index.dtype, type)){
         System.out.println("Error, index is not Integer. Row: " + (exp.row+1) + ", col: "+ (exp.col+1));
       }
   }
 
-  public void visit( CallExp exp, int level ) {
+  public void visit( CallExp exp, int level, boolean flag ) {
     int index = lookupAll(exp.func, level);
     if (index!=-1){
       ArrayList<NodeType> list = table.get(Integer.toString(index));
@@ -399,7 +399,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
         exp.dtype = new SimpleDec(0,0, new NameTy(0,0,NameTy.VOID), null);
       }
       if (exp.args!=null){
-        exp.args.accept( this, ++level );
+        exp.args.accept( this, ++level, flag);
         FunctionDec temp = (FunctionDec) n.def;
         VarDecList decList = temp.params;
         ArrayList<Integer> paramList = getParamTypes(decList);
@@ -414,14 +414,14 @@ public class SemanticAnalyzer implements AbsynVisitor {
       
   }
 
-  public void visit( WhileExp exp, int level ){
+  public void visit( WhileExp exp, int level, boolean flag ){
     level++;
     indent(level);
     System.out.println("Entering the scope of a while block:");
     if (exp.test!=null)
-      exp.test.accept( this, level );
+      exp.test.accept( this, level, flag);
     if (exp.body!=null)
-      exp.body.accept( this, level );
+      exp.body.accept( this, level, flag);
     ArrayList<NodeType> list = table.get(Integer.toString(level));
     printArrayList(list, level);
     indent(level);
@@ -430,37 +430,37 @@ public class SemanticAnalyzer implements AbsynVisitor {
     level--;
   }
 
-  public void visit( CompoundExp exp, int level ){
+  public void visit( CompoundExp exp, int level, boolean flag ){
     if (exp.decs!=null){
-      exp.decs.accept( this, level );
+      exp.decs.accept( this, level, flag);
     }
     if (exp.exps!= null){
-      exp.exps.accept( this, level );
+      exp.exps.accept( this, level, flag);
     }
   }
 
-  public void visit( SimpleVar exp, int level ){
+  public void visit( SimpleVar exp, int level, boolean flag ){
 
 }
 
-  public void visit( NilExp exp, int level ){
+  public void visit( NilExp exp, int level, boolean flag ){
 
   }
 
-  public void visit( FunctionDec exp, int level ){
+  public void visit( FunctionDec exp, int level, boolean flag ){
     //check if the function has been declared before
     int index = lookupAll(exp.func, level);
     //if not, add it
     if (index==-1){
       insert(Integer.toString(level), exp, level, exp.func);
-      exp.result.accept( this, level );
+      exp.result.accept( this, level, flag);
       level++;
       indent(level);
       System.out.println("Entering the scope for function "+exp.func);
       if ( exp.params != null)
-        exp.params.accept( this, level );
+        exp.params.accept( this, level, flag);
       if (exp.body.getClass().toString() != "NilExp")
-        exp.body.accept( this, level );
+        exp.body.accept( this, level, flag);
       ArrayList<NodeType> list = table.get(Integer.toString(level));
       printArrayList(list, level);
       indent(level);
@@ -475,14 +475,14 @@ public class SemanticAnalyzer implements AbsynVisitor {
       if (temp.body.getClass().toString().equals("class absyn.NilExp")){
         deleteSpecific(Integer.toString(level), exp.func);
         insert(Integer.toString(level), exp, level, exp.func);
-        exp.result.accept( this, level );
+        exp.result.accept( this, level, flag);
         level++;
         indent(level);
         System.out.println("Entering the scope for function "+exp.func);
         if ( exp.params != null)
-          exp.params.accept( this, level );
+          exp.params.accept( this, level, flag);
         if (exp.body.getClass().toString() != "NilExp")
-          exp.body.accept( this, level );
+          exp.body.accept( this, level, flag);
         ArrayList<NodeType> list = table.get(Integer.toString(level));
         printArrayList(list, level);
         indent(level);
@@ -497,7 +497,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( SimpleDec exp, int level ){
+  public void visit( SimpleDec exp, int level, boolean flag ){
     if (lookup(exp.name, level) == false){
       int type = findType(exp, "simple");
       if (type == NameTy.VOID){
@@ -512,7 +512,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     //exp.typ.accept( this, ++level );
   }
 
-  public void visit( ArrayDec exp, int level ){
+  public void visit( ArrayDec exp, int level, boolean flag ){
     if (lookup(exp.name, level) == false){
       int type = findType(exp, "array");
       if (type == NameTy.VOID){
@@ -527,8 +527,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
     //exp.typ.accept( this, ++level );
   }
 
-  public void visit( ReturnExp retExp, int level ){
-    retExp.exp.accept( this, ++level );
+  public void visit( ReturnExp retExp, int level, boolean flag ){
+    retExp.exp.accept( this, ++level, flag);
     ArrayList<NodeType> list = table.get(Integer.toString(level-2));
     NodeType n = list.get(list.size()-1);
     String decType = getDecType(n.def);
@@ -543,7 +543,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
 
-  public void visit (NameTy exp, int level ){
+  public void visit (NameTy exp, int level, boolean flag ){
     switch( exp.typ ){
     case NameTy.BOOL:
       //System.out.println(" bool ");
@@ -559,16 +559,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
   
-  public void visit( OpExp exp, int level ) {
+  public void visit( OpExp exp, int level, boolean flag ) {
     level++;
     int rhs = -1;
     int lhs = -1;
     if (exp.right != null)
-      exp.right.accept( this, level );
+      exp.right.accept( this, level, flag);
       String rhsDecType = getDecType(exp.right.dtype);
       rhs = findType(exp.right.dtype, rhsDecType);
     if (exp.left.getClass().toString() != "NilExp")
-      exp.left.accept( this, level );
+      exp.left.accept( this, level, flag);
       String lhsDecType = getDecType(exp.left.dtype);
       lhs = findType(exp.left.dtype, lhsDecType);
     if (lhs == rhs){
@@ -586,7 +586,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   }
 
-  public void visit( NodeType exp, int level ) {
+  public void visit( NodeType exp, int level, boolean flag ) {
 
   }
 }

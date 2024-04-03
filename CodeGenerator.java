@@ -249,7 +249,7 @@ public class CodeGenerator implements AbsynVisitor {
       FunctionDec varDtype = (FunctionDec)temp;
       entry = varDtype.funaddr;
     }
-    emitComment("function call: "+exp.func+entry);
+    emitComment("function call: "+exp.func);
     emitRM("ST", fp, offset+ofpFO, fp, "store current fp");
     emitRM("LDA", fp, offset, fp, "push new frame");
     emitRM("LDA",ac, 1, pc, "save return in ac");
@@ -438,16 +438,16 @@ public class CodeGenerator implements AbsynVisitor {
         //System.out.println( " = " );
         break;
       case OpExp.LT:
-        emitRO("SUB", ac, ac1, ac, "op: ==");
-        emitRM("JLT", ac, 2, pc, "");
+        emitRO("SUB", ac, ac1, ac, "op: <");
+        emitRM("JGT", ac, 2, pc, "");
         emitRM("LDC", ac, 0, 0, "false case");
         emitRM("LDA", pc, 1, pc, "unconditional jump");
         emitRM("LDC", ac, 1, 0, "true case");
         //System.out.println( " < " );
         break;
       case OpExp.GT:
-        emitRO("SUB", ac, ac1, ac, "op: ==");
-        emitRM("JGT", ac, 2, pc, "");
+        emitRO("SUB", ac, ac1, ac, "op: >");
+        emitRM("JLT", ac, 2, pc, "");
         emitRM("LDC", ac, 0, 0, "false case");
         emitRM("LDA", pc, 1, pc, "unconditional jump");
         emitRM("LDC", ac, 1, 0, "true case");
@@ -457,7 +457,7 @@ public class CodeGenerator implements AbsynVisitor {
         //System.out.println( " - " );
         break;
       case OpExp.NEQ:
-        emitRO("SUB", ac, ac1, ac, "op: ==");
+        emitRO("SUB", ac, ac1, ac, "op: !=");
         emitRM("JNE", ac, 2, pc, "");
         emitRM("LDC", ac, 0, 0, "false case");
         emitRM("LDA", pc, 1, pc, "unconditional jump");
@@ -474,16 +474,16 @@ public class CodeGenerator implements AbsynVisitor {
         //System.out.println( " || ");
         break;
       case OpExp.GTE:
-        emitRO("SUB", ac, ac1, ac, "op: ==");
-        emitRM("JGE", ac, 2, pc, "");
+        emitRO("SUB", ac, ac1, ac, "op: >=");
+        emitRM("JLE", ac, 2, pc, "");
         emitRM("LDC", ac, 0, 0, "false case");
         emitRM("LDA", pc, 1, pc, "unconditional jump");
         emitRM("LDC", ac, 1, 0, "true case");
         //System.out.println( " >= ");
         break;
       case OpExp.LTE:
-        emitRO("SUB", ac, ac1, ac, "op: ==");
-        emitRM("JLE", ac, 2, pc, "");
+        emitRO("SUB", ac, ac1, ac, "op: <=");
+        emitRM("JGE", ac, 2, pc, "");
         emitRM("LDC", ac, 0, 0, "false case");
         emitRM("LDA", pc, 1, pc, "unconditional jump");
         emitRM("LDC", ac, 1, 0, "true case");
